@@ -1,0 +1,32 @@
+{
+  "name": "lt-env-selector-tool-cli",
+  "version": "1.0.0",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "build": "./build.sh",
+    "bundle": "./bundle.sh",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "format-check": "prettier --check ./src",
+    "format-fix": "prettier --write ./src"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/qrcode": "^1.5.6",
+    "prettier": "^3.7.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.0.2",
+    "cheerio": "^1.1.2",
+    "crypto-es": "^3.1.2",
+    "ora": "^9.0.0",
+    "qrcode": "^1.5.4",
+    "yaml": "^2.8.2"
+  }
+}
