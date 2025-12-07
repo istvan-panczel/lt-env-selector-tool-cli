@@ -1,6 +1,6 @@
-import { select, confirm } from '@inquirer/prompts';
-import type { UrlOption, Company, Environment } from './types';
-import { ENVIRONMENTS, BACK_VALUE, EXIT_VALUE } from './types';
+import { confirm, select } from '@inquirer/prompts';
+import type { Company, Environment, UrlOption } from './types';
+import { BACK_VALUE, ENVIRONMENTS, EXIT_VALUE } from './types';
 
 export interface UrlSelectionResult {
   action: 'exit' | 'selected';

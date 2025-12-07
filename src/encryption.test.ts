@@ -1,4 +1,4 @@
-import { test, expect, describe } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 import { AES, Utf8 } from 'crypto-es';
 import { encryptData } from './encryption';
 import type { SelectionData } from './types';

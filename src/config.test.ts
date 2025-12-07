@@ -1,4 +1,4 @@
-import { test, expect, describe } from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 import { parseArgs } from './config';
 
 describe('parseArgs', () => {
@@ -23,21 +23,13 @@ describe('parseArgs', () => {
   });
 
   test('parses combined arguments', () => {
-    const result = parseArgs([
-      '--url',
-      'https://example.com',
-      '--password',
-      'my-secret',
-    ]);
+    const result = parseArgs(['--url', 'https://example.com', '--password', 'my-secret']);
     expect(result.url).toBe('https://example.com');
     expect(result.password).toBe('my-secret');
   });
 
   test('parses combined arguments with = format', () => {
-    const result = parseArgs([
-      '--url=https://example.com',
-      '--password=my-secret',
-    ]);
+    const result = parseArgs(['--url=https://example.com', '--password=my-secret']);
     expect(result.url).toBe('https://example.com');
     expect(result.password).toBe('my-secret');
   });

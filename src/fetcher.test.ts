@@ -1,60 +1,39 @@
-import { test, expect, describe, mock, beforeEach, afterEach } from 'bun:test';
-import { resolveUrl, fetchSwaggerUrls } from './fetcher';
+import { afterEach, describe, expect, mock, test } from 'bun:test';
+import { fetchSwaggerUrls, resolveUrl } from './fetcher';
 
 describe('resolveUrl', () => {
   test('returns absolute HTTP URL unchanged', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/',
-      'http://api.example.com/spec.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/', 'http://api.example.com/spec.yaml');
     expect(result).toBe('http://api.example.com/spec.yaml');
   });
 
   test('returns absolute HTTPS URL unchanged', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/',
-      'https://api.example.com/spec.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/', 'https://api.example.com/spec.yaml');
     expect(result).toBe('https://api.example.com/spec.yaml');
   });
 
   test('resolves relative ./path against base URL', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/index.html',
-      './openapi.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/index.html', './openapi.yaml');
     expect(result).toBe('https://example.com/swagger/openapi.yaml');
   });
 
   test('resolves relative /path against origin', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/index.html',
-      '/api/openapi.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/index.html', '/api/openapi.yaml');
     expect(result).toBe('https://example.com/api/openapi.yaml');
   });
 
   test('resolves relative path (no prefix) against base directory', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/index.html',
-      'openapi.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/index.html', 'openapi.yaml');
     expect(result).toBe('https://example.com/swagger/openapi.yaml');
   });
 
   test('handles base URL with trailing slash', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/',
-      './openapi.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/', './openapi.yaml');
     expect(result).toBe('https://example.com/swagger/openapi.yaml');
   });
 
   test('handles base URL with query string', () => {
-    const result = resolveUrl(
-      'https://example.com/swagger/index.html?version=1',
-      './openapi.yaml'
-    );
+    const result = resolveUrl('https://example.com/swagger/index.html?version=1', './openapi.yaml');
     expect(result).toBe('https://example.com/swagger/openapi.yaml');
   });
 });
@@ -67,9 +46,7 @@ describe('fetchSwaggerUrls', () => {
   });
 
   test('returns error when swagger page fetch fails', async () => {
-    globalThis.fetch = mock(() =>
-      Promise.resolve(new Response('', { status: 404 }))
-    );
+    globalThis.fetch = mock(() => Promise.resolve(new Response('', { status: 404 })));
 
     const result = await fetchSwaggerUrls('https://example.com/swagger/');
 

@@ -1,10 +1,11 @@
 import ora from 'ora';
 import { getConfig } from './config';
-import { fetchSwaggerUrls, type FetchResult } from './fetcher';
-import { promptUrlSelection, promptCompanySelection, promptEnvironmentSelection, promptRetry } from './prompts';
+import { type FetchResult, fetchSwaggerUrls } from './fetcher';
+import { promptCompanySelection, promptEnvironmentSelection, promptRetry, promptUrlSelection } from './prompts';
 import { encryptData } from './encryption';
 import { displayQRCode, waitForKeyPress } from './qr';
-import type { UrlOption, Company, Environment } from './types';
+import { stripMajorVersion } from './url';
+import type { Company, Environment, UrlOption } from './types';
 
 async function fetchUrlsWithRetry(url: string): Promise<UrlOption[] | null> {
   while (true) {
@@ -83,12 +84,15 @@ async function main(): Promise<void> {
       continue; // User went back to URL selection
     }
 
+    // Strip major version from URL (e.g., /v5 -> '')
+    const selectedUrlWithoutMajorVersion = stripMajorVersion(selectedUrl);
+
     // Generate encrypted data
     const encrypted = encryptData(
       {
         company: selectedCompany,
         env: selectedEnv,
-        url: selectedUrl,
+        url: selectedUrlWithoutMajorVersion,
       },
       config.password
     );
