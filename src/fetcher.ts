@@ -1,6 +1,6 @@
 import * as cheerio from 'cheerio';
 import { parse as parseYaml } from 'yaml';
-import type { UrlOption } from './types';
+import type { BuildVersionInfo, UrlOption } from './types';
 
 export interface FetchResult {
   success: boolean;
@@ -123,6 +123,46 @@ export async function fetchSwaggerUrls(url: string): Promise<FetchResult> {
     return {
       success: true,
       data: options,
+    };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
+export interface BuildVersionResult {
+  success: boolean;
+  data?: BuildVersionInfo;
+  error?: string;
+}
+
+export async function fetchBuildVersion(selectedUrl: string): Promise<BuildVersionResult> {
+  try {
+    const url = `${selectedUrl}/mobile/system/buildVersion`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      return {
+        success: false,
+        error: `HTTP ${response.status}: ${response.statusText}`,
+      };
+    }
+
+    const data = (await response.json()) as BuildVersionInfo;
+
+    if (!data || typeof data.version !== 'string') {
+      return {
+        success: false,
+        error: 'Invalid response format from buildVersion endpoint',
+      };
+    }
+
+    return {
+      success: true,
+      data,
     };
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';

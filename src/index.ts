@@ -1,11 +1,11 @@
 import ora from 'ora';
 import { getConfig } from './config';
-import { type FetchResult, fetchSwaggerUrls } from './fetcher';
+import { type FetchResult, fetchBuildVersion, fetchSwaggerUrls } from './fetcher';
 import { promptCompanySelection, promptEnvironmentSelection, promptRetry, promptUrlSelection } from './prompts';
 import { encryptData } from './encryption';
 import { displayQRCode, waitForKeyPress } from './qr';
 import { stripMajorVersion } from './url';
-import type { Company, Environment, UrlOption } from './types';
+import type { BuildVersionInfo, Company, Environment, UrlOption } from './types';
 
 async function fetchUrlsWithRetry(url: string): Promise<UrlOption[] | null> {
   while (true) {
@@ -25,6 +25,17 @@ async function fetchUrlsWithRetry(url: string): Promise<UrlOption[] | null> {
       return null;
     }
   }
+}
+
+function displayBuildVersionBanner(info: BuildVersionInfo): void {
+  const divider = '─'.repeat(50);
+  console.log(`\n┌${divider}┐`);
+  console.log(`│  Server: ${info.serverId.padEnd(39)}│`);
+  console.log(`│  Version: ${info.version.padEnd(38)}│`);
+  console.log(`│  Environment: ${info.serverEnv.padEnd(34)}│`);
+  console.log(`│  DB Version: ${info.dbVersion.padEnd(35)}│`);
+  console.log(`│  Date/Time: ${info.dateTime.padEnd(36)}│`);
+  console.log(`└${divider}┘`);
 }
 
 async function main(): Promise<void> {
@@ -49,6 +60,17 @@ async function main(): Promise<void> {
     }
 
     const selectedUrl = urlResult.value!;
+
+    // Fetch and display build version info
+    const versionSpinner = ora('Fetching build version info...').start();
+    const versionResult = await fetchBuildVersion(selectedUrl);
+
+    if (versionResult.success && versionResult.data) {
+      versionSpinner.succeed('Build version info loaded');
+      displayBuildVersionBanner(versionResult.data);
+    } else {
+      versionSpinner.warn(`Could not fetch build version: ${versionResult.error || 'Unknown error'}`);
+    }
 
     // Step 2: Company Selection
     let selectedCompany: Company | null = null;

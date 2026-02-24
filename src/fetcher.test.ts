@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test';
-import { fetchSwaggerUrls, resolveUrl } from './fetcher';
+import { fetchBuildVersion, fetchSwaggerUrls, resolveUrl } from './fetcher';
 
 describe('resolveUrl', () => {
   test('returns absolute HTTP URL unchanged', () => {
@@ -218,5 +218,86 @@ paths: {}
     // Network errors in extractSwaggerSpecUrl are caught and return null,
     // resulting in the generic "Could not find" error message
     expect(result.error).toContain('Could not find OpenAPI specification URL');
+  });
+});
+
+describe('fetchBuildVersion', () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  const validResponse = {
+    version: '1.0.0',
+    serverId: 'foo_bar',
+    serverEnv: 'test',
+    dbVersion: 'fbTEST:42',
+    dateTime: '2026-01-01 12:00:00',
+  };
+
+  test('successfully fetches and returns build version info', async () => {
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response(JSON.stringify(validResponse), { status: 200 }))
+    );
+
+    const result = await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(validResponse);
+  });
+
+  test('constructs correct URL with /mobile/system/buildVersion path', async () => {
+    let capturedUrl = '';
+    globalThis.fetch = mock((url: string) => {
+      capturedUrl = url;
+      return Promise.resolve(new Response(JSON.stringify(validResponse), { status: 200 }));
+    });
+
+    await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(capturedUrl).toBe('https://example.com/api/v5/mobile/system/buildVersion');
+  });
+
+  test('returns error on non-OK HTTP response', async () => {
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response('Not Found', { status: 404, statusText: 'Not Found' }))
+    );
+
+    const result = await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('404');
+  });
+
+  test('returns error on network failure', async () => {
+    globalThis.fetch = mock(() => Promise.reject(new Error('Network error')));
+
+    const result = await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Network error');
+  });
+
+  test('returns error on invalid response format', async () => {
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response(JSON.stringify({ unexpected: 'data' }), { status: 200 }))
+    );
+
+    const result = await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Invalid response format');
+  });
+
+  test('returns error on non-JSON response', async () => {
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response('not json', { status: 200 }))
+    );
+
+    const result = await fetchBuildVersion('https://example.com/api/v5');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
   });
 });

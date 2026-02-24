@@ -3,6 +3,14 @@ export interface UrlOption {
   label: string;
 }
 
+export interface BuildVersionInfo {
+  version: string;
+  serverId: string;
+  serverEnv: string;
+  dbVersion: string;
+  dateTime: string;
+}
+
 // Company is now a dynamic string from build-time config
 export type Company = string;
 
