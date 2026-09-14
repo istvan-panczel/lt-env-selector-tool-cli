@@ -94,6 +94,12 @@ COMPANIES='["company1","company2","company3"]' \
 ./dist/lt-env-selector-darwin-arm64
 ```
 
+> **macOS note:** `bun build --compile` leaves the macOS binaries with an invalid ad-hoc code signature
+> (the JS payload is appended after the linker signs). macOS 26 tolerated it; macOS 27+ kills the process
+> at launch with a bare `killed lt-env-selector`. `build.sh` therefore re-signs the `darwin-*` outputs with
+> `codesign --force --sign -` when run on a Mac. If you ever get a binary built elsewhere, run that command
+> on it yourself.
+
 ## Usage
 
 ### Command Line Options

@@ -72,6 +72,18 @@ for platform in "${platforms[@]}"; do
     --define "COMPANIES=$COMPANIES" \
     --outfile="$DIST_DIR/$output_name"
 
+  # Bun appends the JS payload after the linker signs the Mach-O, which leaves an
+  # invalid ad-hoc signature. macOS 27+ SIGKILLs such binaries at launch ("killed"),
+  # so re-sign the macOS outputs. Only possible on a macOS host (codesign is Xcode's).
+  if [[ "$platform" == darwin-* ]]; then
+    if command -v codesign >/dev/null 2>&1; then
+      codesign --force --sign - "$DIST_DIR/$output_name"
+      echo "  re-signed (ad hoc) $output_name"
+    else
+      echo "  WARNING: codesign not found; $output_name will be killed on macOS 27+ until re-signed"
+    fi
+  fi
+
   echo "  -> $DIST_DIR/$output_name"
 done
 
